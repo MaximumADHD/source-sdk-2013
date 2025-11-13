@@ -300,7 +300,7 @@ bool CTFAutobalance::ValidateCandidates()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-CTFPlayer *CTFAutobalance::FindNextCandidate( bool bPrioritizeSoloPlayers )
+CTFPlayer *CTFAutobalance::FindNextCandidate( bool bKeepPartiesOnSameTeam )
 {
 	CTFPlayer *pRetVal = NULL;
 
@@ -314,16 +314,16 @@ CTFPlayer *CTFAutobalance::FindNextCandidate( bool bPrioritizeSoloPlayers )
 			CTFPlayer *pTFPlayer = ToTFPlayer( pTeam->GetPlayer( i ) );
 			if ( pTFPlayer && !IsAlreadyCandidate( pTFPlayer ) && pTFPlayer->CanBeAutobalanced() )
 			{
-				if ( bPrioritizeSoloPlayers )
+				if ( bKeepPartiesOnSameTeam )
 				{
-					// disqualify this player if they are in a non-solo party
+					// disqualify this player if they are in a party of 2 or more that wants to be kept on the same team.
 					CSteamID steamId;
 
 					if ( pTFPlayer->GetSteamID( &steamId ) )
 					{
 						CTFParty* pTFParty = GTFGCClientSystem()->GetPartyForPlayer( steamId );
 
-						if ( pTFParty && pTFParty->GetNumMembers() > 1 )
+						if ( pTFParty && pTFParty->GetNumMembers() > 1 && pTFParty->GetKeepPartyOnSameTeam() )
 						{
 							continue;
 						}
@@ -391,7 +391,7 @@ bool CTFAutobalance::FindCandidates()
 
 		if ( !pTFPlayer )
 		{
-			// everyone is in a party, we have no choice but to split
+			// everyone is in a party, we have no choice but to split (?)
 			pTFPlayer = FindNextCandidate(false);
 		}
 
