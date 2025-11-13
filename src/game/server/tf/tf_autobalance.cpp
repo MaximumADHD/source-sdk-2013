@@ -389,7 +389,7 @@ bool CTFAutobalance::FindCandidates()
 		// find a candidate that is not currently in a party
 		CTFPlayer *pTFPlayer = FindNextCandidate(true);
 
-		if ( pTFPlayer == NULL )
+		if ( !pTFPlayer )
 		{
 			// everyone is in a party, we have no choice but to split
 			pTFPlayer = FindNextCandidate(false);
