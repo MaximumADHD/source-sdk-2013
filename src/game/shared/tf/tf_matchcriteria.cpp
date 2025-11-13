@@ -125,7 +125,7 @@ void ITFGroupMatchCriteria::SetCustomPingTolerance( uint32_t unCustomPingToleran
 }
 
 //-----------------------------------------------------------------------------
-void ITFGroupMatchCriteria::SetKeepPartyOnSameTeam(bool bKeepPartyOnSameTeam)
+void ITFGroupMatchCriteria::SetKeepPartyOnSameTeam( bool bKeepPartyOnSameTeam )
 {
 	if ( Proto().keep_party_on_same_team() != bKeepPartyOnSameTeam )
 	{
