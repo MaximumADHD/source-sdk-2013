@@ -13,6 +13,7 @@
 #include "minigames/tf_duel.h"
 #include "player_resource.h"
 #include "tf_player_resource.h"
+#include "tf_party.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
@@ -299,7 +300,7 @@ bool CTFAutobalance::ValidateCandidates()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-CTFPlayer *CTFAutobalance::FindNextCandidate()
+CTFPlayer *CTFAutobalance::FindNextCandidate( bool bPrioritizeSoloPlayers )
 {
 	CTFPlayer *pRetVal = NULL;
 
@@ -313,6 +314,22 @@ CTFPlayer *CTFAutobalance::FindNextCandidate()
 			CTFPlayer *pTFPlayer = ToTFPlayer( pTeam->GetPlayer( i ) );
 			if ( pTFPlayer && !IsAlreadyCandidate( pTFPlayer ) && pTFPlayer->CanBeAutobalanced() )
 			{
+				if ( bPrioritizeSoloPlayers )
+				{
+					// disqualify this player if they are in a non-solo party
+					CSteamID steamId;
+
+					if ( pTFPlayer->GetSteamID( &steamId ) )
+					{
+						CTFParty* pTFParty = GTFGCClientSystem()->GetPartyForPlayer( steamId );
+
+						if ( pTFParty && pTFParty->GetNumMembers() > 1 )
+						{
+							continue;
+						}
+					}
+				}
+
 				vecCandidates.AddToTail( pTFPlayer );
 			}
 		}
@@ -369,7 +386,15 @@ bool CTFAutobalance::FindCandidates()
 
 	while ( nNumFound < nTotal )
 	{
-		CTFPlayer *pTFPlayer = FindNextCandidate();
+		// find a candidate that is not currently in a party
+		CTFPlayer *pTFPlayer = FindNextCandidate(true);
+
+		if ( pTFPlayer == nullptr )
+		{
+			// everyone is in a party, we have no choice but to split
+			pTFPlayer = FindNextCandidate(false);
+		}
+
 		if ( pTFPlayer )
 		{
 			// the best candidates are towards the tail of the list so
